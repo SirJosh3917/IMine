@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CP;
@@ -7,20 +7,11 @@ namespace IMine
 {
 	class Program
 	{
-		//World width and height constants
-		public const int WorldX = 50;
-		public const int WorldY = 50;
-		
-		//Create a new world initalizer array
-		static int[,] bworld = new int[WorldX, WorldY];
-		
-		//The world's render pane
+		static int[,] bworld = new int[50, 50];
 		static RenderPane world;
 
-		//Player's X and Y
 		static uint px, py;
 
-		//Drawomg Bitmaps
 		static Bitmap
 			miner,
 			stone,
@@ -32,31 +23,22 @@ namespace IMine
 
 		static void Main(string[] args)
 		{
-			//Define Variables
 			CDraw window = new CDraw();
-			world = new RenderPane(4 * WorldX, 4 * WorldY + 16);
-			stone = new Bitmap(4, 4);
-			grass = new Bitmap(4, 4);
-			dirt = new Bitmap(4, 4);
-			miner = new Bitmap(4, 4);
-			grass_mined = new Bitmap(4, 4);
-			grass_mined.Fill(0x80);
-			dirt_mined = grass_mined;
-			stone_mined = grass_mined;
 
 			px = 9;
 			py = 0;
-			
-			//Clear the CDraw window
+
 			window.Clear();
-			
-			//Generate the world
-			for (int y = 0; y < WorldY; y++)
-				for (int x = 0; x < WorldX; x++)
+
+			for (int y = 0; y < 50; y++)
+			for (int x = 0; x < 50; x++)
 					bworld[x, y] = (y == 0 ? ((int)Blocks.Grass) : (y > 4 ? ((int)Blocks.Stone) : ((int)Blocks.Dirt)));
+
+			world = new RenderPane(4 * 50, 4 * 50 + 16);
 
 			#region Init Blocks
 			#region Stone
+			stone = new Bitmap(4, 4);
 			stone.Fill(0x80);
 			stone.Border(0x80, 'X');
 			for (int x = 1; x < 3; x++)
@@ -65,6 +47,7 @@ namespace IMine
 			#endregion
 
 			#region Grass
+			grass = new Bitmap(4, 4);
 			grass.Fill(0xa0);
 			grass.Border(0xa4, 'X');
 			grass.SetColor(1, 1, 0x40);
@@ -75,6 +58,7 @@ namespace IMine
 			#endregion
 
 			#region Dirt
+			dirt = new Bitmap(4, 4);
 			dirt.Fill(0x64);
 			for (int x = 1; x < 3; x++)
 				for (int y = 1; y < 3; y++)
@@ -84,21 +68,22 @@ namespace IMine
 			dirt.Border(0x64, 'X');
 			#endregion
 
+			miner = new Bitmap(4, 4);
 			miner.Fill(0xe0);
 			miner.DrawHorizontalText(0, 0, 0xe0, "****.__.    \\../");
 			#endregion
-			
-			//Render the world
+
+			grass_mined = new Bitmap(4, 4);
+			grass_mined.Fill(0x80);
+			dirt_mined = grass_mined;
+			stone_mined = grass_mined;
+
 			Render();
-			
+
 			ConsoleKey k;
-			
-			int _w1, _w2;
-			
-			//While any key but escape is pressed
+
 			while((k = Console.ReadKey(true).Key) != ConsoleKey.Escape)
 			{
-				//Check if that key is WASD
 				switch (k)
 				{
 					case ConsoleKey.W:
@@ -107,7 +92,7 @@ namespace IMine
 						break;
 					case ConsoleKey.A:
 						if(px < 40)
-							world.RenderX -= 4;
+						world.RenderX -= 4;
 						px--;
 						break;
 					case ConsoleKey.S:
@@ -116,46 +101,40 @@ namespace IMine
 						break;
 					case ConsoleKey.D:
 						if(px > 8)
-							world.RenderX += 4;
+						world.RenderX += 4;
 						px++;
 						break;
 				}
-				
-				//Block player from moving off of map
-				if (pyx < 0 || px > (_w2 = uint.MaxValue - 10))
+				if (px < 0 || px > uint.MaxValue - 10)
 					px = 0;
-				if (py < 0 || py > _w2)
+				if (py < 0 || py > uint.MaxValue - 10)
 					py = 0;
-				if (px > (_w1 = WorldY - 1))
-					px = _w1;
-				if (py > _w1)
-					py = _w1;
-				
-				//If the block isn't already a mined block
+				if (px > 49)
+					px = 49;
+				if (py > 49)
+					py = 49;
 				if (bworld[px, py] != ((int)Blocks.Grass_Mined)) {
-					bworld[px, py] = ((int)Blocks.Grass_Mined); //Mine it
+					bworld[px, py] = ((int)Blocks.Grass_Mined);
+					for(int i = 0; i < 1000000; i++)
+					{
+
+					}
 				}
 				Render();
-				
-				//X and Y
-				var map = new Bitmap(px.Length + 1 + py.Length, 1);
+				var map = new Bitmap(Convert.ToInt32(px) + 1 + Convert.ToInt32(py), 1);
 				map.DrawHorizontalText(0, 0, 0x0a, px.ToString() + ":" + py.ToString());
 			}
-			
-			//Wait for a key to be pressed and then exit
+
 			Console.ReadKey();
 		}
 
 		static void Render()
 		{
-			//Draw all the correct bitmaps in their corresponding areas
-			uint x, y;
-			
 			for(uint _x = 0; _x < 50; _x++)
 				for (uint _y = 0; _y < 50; _y++)
 				{
-					x = _x * 4;
-					y = _y * 4;
+					uint x = _x * 4;
+					uint y = _y * 4;
 
 					world.DrawBitmap(x, y + 16, GetBlock(bworld[_x, _y]), false);
 				}
